@@ -31,8 +31,9 @@ export class RASymbolTip extends Component {
     public scatterTx: Node = null!; // scatter提示文字節點
 
     // symbol bg size
-    private readonly normal_w: number = 454;
-    private readonly wide_w: number = 610;
+    private readonly symbol_w: number = 454;
+    private readonly wiid_w: number = 560;
+    private readonly scatter_w: number = 610;
     private readonly normal_h: number = 310;
 
     protected onLoad(): void {
@@ -54,20 +55,20 @@ export class RASymbolTip extends Component {
         this.setSymbolSprite(this.gameResource.getSymbolImg(id));
 
         switch(id){
-            case RASymbolID.g9: // wild
-            case RASymbolID.g10:
+            case RASymbolID.WW: // wild
+            case RASymbolID.GoldWW:
                 this.symAmountRoot.active = false;
                 this.oddsNumberRoot.active = false;
                 this.wildTx.active = true;
                 this.scatterTx.active = false;
-                this.setBGSize(this.wide_w, this.normal_h);
+                this.setBGSize(this.wiid_w, this.normal_h);
                 break;
-            case RASymbolID.g11:
+            case RASymbolID.Scatter:
                 this.symAmountRoot.active = false;
                 this.oddsNumberRoot.active = false;
                 this.wildTx.active = false;
                 this.scatterTx.active = true; 
-                this.setBGSize(this.wide_w, this.normal_h);
+                this.setBGSize(this.scatter_w, this.normal_h);
                 break;
             default:
                 this.symAmountRoot.active = true;
@@ -75,7 +76,7 @@ export class RASymbolTip extends Component {
                 this.wildTx.active = false;
                 this.scatterTx.active = false;
                 this.setSymbolOdds(amount);
-                this.setBGSize(this.normal_w, this.normal_h);
+                this.setBGSize(this.symbol_w, this.normal_h);
                 break;
         }
     }

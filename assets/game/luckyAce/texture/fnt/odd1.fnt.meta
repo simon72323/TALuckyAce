@@ -15,14 +15,14 @@
       "fontDefDictionary": {
         "46": {
           "rect": {
-            "x": 0,
+            "x": 7,
             "y": 96,
-            "width": 32,
+            "width": 16,
             "height": 48
           },
           "xOffset": 0,
           "yOffset": 1,
-          "xAdvance": 32
+          "xAdvance": 16
         },
         "48": {
           "rect": {

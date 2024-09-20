@@ -45,6 +45,7 @@ export class RABaseGameView extends Component {
     private columnInterval: number = 150; // 每一行 symbol開始發牌間隔時間
     private listenTime: number = 500;
     private moveToTime: number = 100;
+    private wildMoveTime: number = 500; // 金色 wild移到其他 wild的速度
 
     private symbolFinishMove: Function = ()=>{};
     private symbolFinishMoveCallBack: Function = ()=>{};
@@ -148,23 +149,27 @@ export class RABaseGameView extends Component {
         await this.waitMilliSeconds(1100);
         this.symbolPlayDestroy(linegrids);
 
-        // 綠色Wild節點變成牌背
-        let gwgrids : number[] = []
-        if(greenwild.length !== 0){
-            gwgrids = greenwild[0].Grids;
-            this.symbolPlayWildFlop(gwgrids);
+        // 金色卡牌變成牌背
+        let flipgrids : number[] = []; // 需要變成牌背的 grids
+        for(let i = 0; i < linedata.length; ++i){
+            for(let j = 0; j < linedata[i].Element.length; ++j){
+                if(linedata[i].Element[j] >= RASymbolID.GoldAce){
+                    flipgrids.push(linedata[i].Grids[j]);
+                }
+            }
         }
+        this.symbolPlayWildFlop(flipgrids);
 
-        // 紅色Wild節點變成牌背(紅色Wild可能有多個)
+        // 尋找紅色Wild MainGrid (紅色Wild MainGrid 可能有多個)
         let redWildMainGrids: number []= []; // 紅色 wild main grid
         if(redwild.length !== 0){
             for(let i = 0; i < redwild.length; ++i){
                 redWildMainGrids.push(redwild[i].MainGrid);
             }
-            this.symbolPlayWildFlop(redWildMainGrids);
+            // this.symbolPlayWildFlop(redWildMainGrids);
         }
 
-        // 動畫播放完畢，等1000毫秒，關閉 mask，節點掛回原本父節點
+        // 動畫播放完畢，等1000毫秒，關閉 mask，中線節點掛回原本父節點
         await this.waitMilliSeconds(1000);
         this.mask.active = false;
         this.changeSymbolParent(linegrids, this.symbolRoot);
@@ -176,21 +181,24 @@ export class RABaseGameView extends Component {
             const column = this.getColumnID(linegrids[i]);
             const row = this.getRowID(linegrids[i]);
             this.symbol[column][row].playDraw(draw[column][row] as RASymbolID);
+
+            // 補牌時，scatter node掛到symbolFxLayer下，其他掛到symbolRoot下
+            (this.symbol[column][row].symbolID === RASymbolID.Scatter) ? 
+            (this.symbol[column][row].node.parent = this.symbolFxLayer):
+            (this.symbol[column][row].node.parent = this.symbolRoot)
         }
 
-        // 等0.5秒翻牌(有wild時)
-        await this.waitMilliSeconds(500);
-
-        if(gwgrids.length !== 0){
-            this.symbolPlayWildFlip(gwgrids);
+        // wild 牌背翻成牌面
+        if(flipgrids.length !== 0){
+            this.symbolPlayWildFlip(flipgrids);
         }
 
         if(redWildMainGrids.length !== 0){
             this.symbolPlayWildFlip(redWildMainGrids);
 
-            await this.waitMilliSeconds(500);
+            await this.waitMilliSeconds(1000);
             // 紅Wild出現複製多個，吃掉指定位置卡牌
-            this.symbolPlayWildReplicate(redWildMainGrids);
+            await this.symbolPlayWildReplicate(redWildMainGrids);
 
             for(let i = 0; i < redWildMainGrids.length; ++i){
                 this.symbolReplicate(redWildMainGrids[i], redwild[i].Grids)
@@ -340,7 +348,7 @@ export class RABaseGameView extends Component {
             for (let j = 0; j < this.symbol[i].length; ++j) {
                 this.symbol[i][j].setSymbol(Cards[i][j]);
 
-                if(this.symbol[i][j].getSymbolID() === RASymbolID.g9 || this.symbol[i][j].getSymbolID() === RASymbolID.g10 || this.symbol[i][j].getSymbolID() === RASymbolID.g11){
+                if(this.symbol[i][j].getSymbolID() === RASymbolID.WW || this.symbol[i][j].getSymbolID() === RASymbolID.GoldWW || this.symbol[i][j].getSymbolID() === RASymbolID.Scatter){
                     this.symbol[i][j].node.parent = this.symbolFxLayer;
                 }else{
                     this.symbol[i][j].node.parent = this.symbolRoot;
@@ -404,7 +412,7 @@ export class RABaseGameView extends Component {
             this.playPokerShoeSp(index, 1);
             this.symbol[index][i].moveIn();
 
-            if(this.symbol[index][i].getSymbolID() === RASymbolID.g11){
+            if(this.symbol[index][i].getSymbolID() === RASymbolID.Scatter){
                 isScatterAppear = true;
             }
         }
@@ -478,7 +486,7 @@ export class RABaseGameView extends Component {
         let scatterNode: RASymbol[] = [];
         for(let i = 0 ; i < (columnIndex + 1); ++i){
             for(let j = 0; j < this.row; ++j){
-                if(this.symbol[i][j].getSymbolID() === RASymbolID.g11){
+                if(this.symbol[i][j].getSymbolID() === RASymbolID.Scatter){
                     scatterNode.push(this.symbol[i][j]);
                 }
             }
@@ -598,7 +606,7 @@ export class RABaseGameView extends Component {
      * 指定 grid symbol播放wild 分裂動畫
      * @param grids
      */
-    private symbolPlayWildReplicate(grids: number[]): void{
+    private async symbolPlayWildReplicate(grids: number[]): Promise<void>{
         for(let i = 0; i < grids.length; ++i){
             let c = this.getColumnID(grids[i])
             let r = this.getRowID(grids[i])
@@ -629,12 +637,12 @@ export class RABaseGameView extends Component {
         for(let i = 0; i < replicatpos.length; ++i){
             let replicatnode = instantiate(this.symbolPrefab);
             replicatnode.parent = this.symbolFxLayer;
-            replicatnode.getComponent(RASymbol).setWildSymbolDirect(RASymbolID.g10);
+            replicatnode.getComponent(RASymbol).setWildSymbolDirect(RASymbolID.GoldWW);
             replicatnode.setPosition(mainpos);
             replicatnode.getComponent(RASymbol).moveTo(replicatpos[i],()=>{
-                towild[i].setWildSymbolDirect(RASymbolID.g10);
+                towild[i].setWildSymbolDirect(RASymbolID.GoldWW);
             });
-            await this.waitMilliSeconds(this.moveToTime);
+            await this.waitMilliSeconds(this.wildMoveTime);
         }
         console.log('replicatnode done');
 

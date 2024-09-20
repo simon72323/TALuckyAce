@@ -17,14 +17,14 @@ export class RASymbol extends Component {
     @property({type: Vec3})
     public outPos = new Vec3() // 撲克牌移出位置
 
-    @property(Number)
-    public rowID:number = 0; // 撲克牌最後所在列的 index
+    @property(CCInteger)
+    public rowID: number = 0; // 撲克牌最後所在列的 index
 
-    @property(Number)
+    @property(CCInteger)
     public columnID: number = 0; // 撲克牌最後所在列的 index
 
     @property({type: Enum(RASymbolID)})
-    public symbolID: RASymbolID = RASymbolID.g1; // symbol ID
+    public symbolID: RASymbolID = RASymbolID.GoldClubs; // symbol ID
 
     // main
     private main: Node = null!;
@@ -117,29 +117,29 @@ export class RASymbol extends Component {
         this.wildNode.active = false;
 
         switch(id){
-            case RASymbolID.g1:
-            case RASymbolID.g2:
-            case RASymbolID.g3:
-            case RASymbolID.g4:
-            case RASymbolID.g5:
-            case RASymbolID.g6:
-            case RASymbolID.g7:
-            case RASymbolID.g8:
-            case RASymbolID.n1:
-            case RASymbolID.n2:
-            case RASymbolID.n3:
-            case RASymbolID.n4:
-            case RASymbolID.n5:
-            case RASymbolID.n6:
-            case RASymbolID.n7:
-            case RASymbolID.n8:
+            case RASymbolID.GoldClubs:
+            case RASymbolID.GoldDiamonds:
+            case RASymbolID.GoldHearts:
+            case RASymbolID.GoldSpades:
+            case RASymbolID.GoldJ:
+            case RASymbolID.GoldQ:
+            case RASymbolID.GoldK:
+            case RASymbolID.GoldAce:
+            case RASymbolID.Clubs:
+            case RASymbolID.Diamonds:
+            case RASymbolID.Hearts:
+            case RASymbolID.Spades:
+            case RASymbolID.J:
+            case RASymbolID.Q:
+            case RASymbolID.K:
+            case RASymbolID.Ace:
                 this.symbolNode.active = true;
                 break;
-            case RASymbolID.g9: // wild
-            case RASymbolID.g10:
+            case RASymbolID.WW: // wild
+            case RASymbolID.GoldWW:
                 this.wildNode.active = true;
                 break;
-            case RASymbolID.g11: // scatter
+            case RASymbolID.Scatter: // scatter
                 this.scatterNode.active = true;
                 break;
         }
@@ -160,7 +160,7 @@ export class RASymbol extends Component {
      * @param id 
      */
     public setWildSymbolDirect(id: RASymbolID): void {
-        if(id !== RASymbolID.g9 && id !== RASymbolID.g10){
+        if(id !== RASymbolID.WW && id !== RASymbolID.GoldWW){
             return;
         }
 
@@ -173,7 +173,7 @@ export class RASymbol extends Component {
         this.wildNode.getComponent(UIOpacity).opacity = 255;
 
         let trackEntry : sp.spine.TrackEntry = null!;
-        (id === RASymbolID.g9) ? 
+        (id === RASymbolID.WW) ? 
         (trackEntry = this.wildSpine.setAnimation(0, 'flip_green', false)) : 
         (trackEntry = this.wildSpine.setAnimation(0, 'flip_red', false))
 
@@ -203,10 +203,10 @@ export class RASymbol extends Component {
     public playWin(): void{
         this.winFx.active = false;
         switch(this.symbolID){
-            case RASymbolID.g9:
+            case RASymbolID.WW:
                 this.wildSpine.setAnimation(0, 'win_green', false);
                 break;
-            case RASymbolID.g10:
+            case RASymbolID.GoldWW:
                 this.wildSpine.setAnimation(0, 'win_red', false);
                 break;
             default:
@@ -248,8 +248,8 @@ export class RASymbol extends Component {
      */
     public playDraw(id: RASymbolID): void {
         this.setSymbol(id);
-        if((this.symbolID !== RASymbolID.g9) && (this.symbolID !== RASymbolID.g10)){
-            console.log('symbol: ', this.symbolID, ' move in');
+        
+        if((this.symbolID !== RASymbolID.WW) && (this.symbolID !== RASymbolID.GoldWW)){
             this.moveIn();
         }
     }
@@ -267,9 +267,9 @@ export class RASymbol extends Component {
      * 播放 wild 翻牌動畫
      */
     public playWildSFlipSpine(): void {
-        if(this.symbolID === RASymbolID.g9){
+        if(this.symbolID === RASymbolID.WW){
             this.wildSpine.setAnimation(0, 'flip_green', false);
-        }else if(this.symbolID === RASymbolID.g10){
+        }else if(this.symbolID === RASymbolID.GoldWW){
             this.wildSpine.setAnimation(0, 'flip_red', false);
         }
     }
@@ -278,7 +278,7 @@ export class RASymbol extends Component {
      * 播放紅wild複製spine動畫
      */
     public playWildReplicateSpine(): void {
-        if(this.symbolID === RASymbolID.g10){
+        if(this.symbolID === RASymbolID.GoldWW){
             this.wildSpine.setAnimation(0, 'replicate_red', false);
         }
     }
@@ -289,7 +289,7 @@ export class RASymbol extends Component {
     public changeSymbolToWild(id: RASymbolID): void {
         let trackEntry : sp.spine.TrackEntry = null!;
         
-        (id === RASymbolID.g9) ? 
+        (id === RASymbolID.WW) ? 
         (trackEntry = this.wildSpine.setAnimation(0, 'flip_green', false)) : 
         (trackEntry = this.wildSpine.setAnimation(0, 'flip_red', false))
 
@@ -305,7 +305,7 @@ export class RASymbol extends Component {
      * 金色 symbol 落至指定位置後撥放金色玻璃斜面閃光
      */
     private playGoldRay(): void {
-        if (this.symbolID < RASymbolID.g9) {
+        if (this.symbolID < RASymbolID.WW) {
             this.node.getComponent(Animation)!.play('goldSymbolRay');
         }
     }

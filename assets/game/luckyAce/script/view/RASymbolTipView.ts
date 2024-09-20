@@ -16,7 +16,7 @@ export class RASymbolTipView extends Component {
     @property(Node)
     public clickBG: Node = null!;
 
-    private enableTip: boolean = true;
+    // private enableTip: boolean = true;
 
     protected onLoad(): void {
     }
@@ -33,14 +33,9 @@ export class RASymbolTipView extends Component {
      * @param symbolid 
      * @param grid 
      */
-    public showTip(event: Event, customEventData: string): void {
-
-        if(!this.enableTip){
-            return;
-        }
-
-        const symNode = (event.target as unknown) as Node;
-        const symbol = symNode.getComponent(RASymbol);
+    public showTip(target: Node, rates: number[]): void {
+        
+        const symbol = target.getComponent(RASymbol);
 
         this.mask.active = true;
         this.clickBG.active = true;
@@ -51,16 +46,16 @@ export class RASymbolTipView extends Component {
         (symbol.columnID <= 2) ? (tip = this.symbolTip[TipDirection.Left]): (tip = this.symbolTip[TipDirection.Right]);
 
         tip.node.setPosition(pos);
-        tip.setSymbolHint(symbol.getSymbolID(), [0,0,0,0,0]);
+        // tip.setSymbolHint(symbol.getSymbolID(), rates);
 
         switch(symbol.getSymbolID()){
-            case RASymbolID.g9:
-            case RASymbolID.g10:
-            case RASymbolID.g11:
+            case RASymbolID.WW:
+            case RASymbolID.GoldWW:
+            case RASymbolID.Scatter:
                 tip.setSymbolHint(symbol.getSymbolID());
                 break;
             default:
-                tip.setSymbolHint(symbol.getSymbolID(), [0,0,0,0,0]);
+                tip.setSymbolHint(symbol.getSymbolID(), rates);
                 break;
         }
         tip.node.active = true;
@@ -82,8 +77,8 @@ export class RASymbolTipView extends Component {
      * 是否允許顯示 symbol tip
      * @param b 
      */
-    public enableTipBtn(b:boolean): void {
-        this.enableTip = b;
-    }
+    // public enableTipBtn(b:boolean): void {
+    //     this.enableTip = b;
+    // }
 }
 
